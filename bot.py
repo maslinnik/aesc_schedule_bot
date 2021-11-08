@@ -30,7 +30,7 @@ weekdays = {0: "Monday",
 
 
 def get_weekday(shift=0):
-    return weekdays[(datetime.datetime.today().weekday()+shift)%7]
+    return weekdays[(datetime.datetime.today().weekday()+shift) % 7]
 
 
 def get_time():
@@ -70,15 +70,16 @@ def get_lesson_start(i):
             return 0
 
 
-@dp.message_handler(commands="test")
-async def cmd_test(message: types.Message):
-    await message.answer(str(get_last_lesson_time()))
+# @dp.message_handler(commands="test")
+# async def cmd_test(message: types.Message):
+#     await message.answer(str(get_last_lesson_time()))
 
 
 @dp.message_handler(commands="help")
 async def cmd_help(message: types.Message):
     s = ""
     s += "/schedule - расписание на сегодня\n"
+    s += "/tomorrow - расписание на завтра\n"
     s += "/now - текущий урок\n"
     s += "/next - следующий урок\n"
     s += "/help - помощь\n"
@@ -102,7 +103,6 @@ async def cmd_schedule(message: types.Message):
 @dp.message_handler(commands="tomorrow")
 async def cmd_tomorrow(message: types.Message):
     answer = ""
-    curr_lesson_time = get_lesson_time()
     with open("data/schedule.json") as json_schedule:
         schedule = json.load(json_schedule)
         for i, subject in enumerate(schedule[get_weekday(1)]):
@@ -151,38 +151,60 @@ async def cmd_next(message: types.Message):
         answer = "Сегодня больше нет уроков\n"
     await message.answer(answer, parse_mode=types.ParseMode.HTML)
 
+
+@dp.message_handler(commands="lesson_test")
+async def cmd_lesson_test(message: types.Message):
+    week_day, lesson_time = map(int, message.text.split()[1:])
+    week_day = weekdays[week_day]
+    with open("data/schedule.json") as json_schedule:
+        schedule = json.load(json_schedule)
+        today_schedule = schedule[week_day]
+    if lesson_time < len(today_schedule):
+        curr_lesson = today_schedule[lesson_time]
+        answer = ""
+        lesson_start = get_readable_time(get_lesson_start(lesson_time))
+        lesson_end = get_readable_time(get_lesson_start(lesson_time) + 45)
+        answer += "{lesson} ({start_time} - {end_time})\n".format(lesson=curr_lesson, start_time=lesson_start,
+                                                                  end_time=lesson_end)
+        with open("data/lesson_specifiers.json") as json_specifiers:
+            specifiers = json.load(json_specifiers)
+            answer += specifiers[curr_lesson]
+    else:
+        answer = "error"
+    await message.answer(answer, parse_mode=types.ParseMode.HTML)
+
+
 async def periodic(delta):  # delta in min
-     while True:
-         with open("data/lesson_time.json") as json_lesson_time:
-             lesson_time = json.load(json_lesson_time)
-             # print(lesson_time)
-         with open("data/schedule.json") as json_schedule:
-             schedule = json.load(json_schedule)
-             today_schedule = schedule[get_weekday()]
-         with open("data/lesson_specifiers.json") as json_specifiers:
-             specifiers = json.load(json_specifiers)
-         now = get_time()
-         # print(f"{now}")
-         for id in range(len(lesson_time["lessons"])):
-             if now + delta == int(lesson_time["lessons"][id]):
-                 lesson_start = get_readable_time(lesson_time["lessons"][id])
-                 lesson_end = get_readable_time(lesson_time["lessons"][id] + 45)
-                 answer = "Через {delta} минут начнётся\n" \
-                          "{lesson} ({start_time} - {end_time})\n".format(delta=delta,
-                                                                          lesson=today_schedule[id],
-                                                                          start_time=lesson_start,
-                                                                          end_time=lesson_end)
-                 curr_lesson = today_schedule[id]
-                 answer += specifiers[curr_lesson]
-                 await bot.send_message(-1001542214018, answer, disable_web_page_preview=False)
-         await asyncio.sleep(60)
+    while True:
+        with open("data/lesson_time.json") as json_lesson_time:
+            lesson_time = json.load(json_lesson_time)
+            # print(lesson_time)
+        with open("data/schedule.json") as json_schedule:
+            schedule = json.load(json_schedule)
+            today_schedule = schedule[get_weekday()]
+        with open("data/lesson_specifiers.json") as json_specifiers:
+            specifiers = json.load(json_specifiers)
+        now = get_time()
+        # print(f"{now}")
+        for id in range(len(lesson_time["lessons"])):
+            if now + delta == int(lesson_time["lessons"][id]):
+                lesson_start = get_readable_time(lesson_time["lessons"][id])
+                lesson_end = get_readable_time(lesson_time["lessons"][id] + 45)
+                answer = "Через {delta} минут начнётся\n" \
+                         "{lesson} ({start_time} - {end_time})\n".format(delta=delta,
+                                                                         lesson=today_schedule[id],
+                                                                         start_time=lesson_start,
+                                                                         end_time=lesson_end)
+                curr_lesson = today_schedule[id]
+                answer += specifiers[curr_lesson]
+                await bot.send_message(-1001542214018, answer, disable_web_page_preview=False)
+        await asyncio.sleep(60)
 
 
- async def on_startup(_):
-     asyncio.create_task(periodic(10))
-        
-    
+async def on_startup(_):
+    asyncio.create_task(periodic(10))
+
+
 if __name__ == "__main__":
     # Запуск бота
     executor.start_polling(dp, skip_updates=True, on_startup=on_startup)
-
