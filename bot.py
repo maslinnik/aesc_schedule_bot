@@ -187,14 +187,20 @@ async def periodic(delta):  # delta in min
         now = get_time()
         # print(f"{now}")
         for id in range(len(lesson_time["lessons"])):
-            if now + delta == int(lesson_time["lessons"][id]):
+            if now + delta + 1 == int(lesson_time["lessons"][id]):
                 lesson_start = get_readable_time(lesson_time["lessons"][id])
                 lesson_end = get_readable_time(lesson_time["lessons"][id] + 45)
-                answer = "Через {delta} минут начнётся\n" \
-                         "{lesson} ({start_time} - {end_time})\n".format(delta=delta,
-                                                                         lesson=today_schedule[id],
-                                                                         start_time=lesson_start,
-                                                                         end_time=lesson_end)
+                if delta > 0:
+                    answer = "Через {delta} минут начнётся\n" \
+                             "{lesson} ({start_time} - {end_time})\n".format(delta=delta,
+                                                                             lesson=today_schedule[id],
+                                                                             start_time=lesson_start,
+                                                                             end_time=lesson_end)
+                else:
+                    answer = "Сейчас начнётся\n" \
+                             "{lesson} ({start_time} - {end_time})\n".format(lesson=today_schedule[id],
+                                                                             start_time=lesson_start,
+                                                                             end_time=lesson_end)
                 curr_lesson = today_schedule[id]
                 answer += specifiers[curr_lesson]
                 await bot.send_message(-1001542214018, answer, disable_web_page_preview=False)
@@ -202,7 +208,8 @@ async def periodic(delta):  # delta in min
 
 
 async def on_startup(_):
-    asyncio.create_task(periodic(10))
+    asyncio.create_task(periodic(5))
+    asyncio.create_task(periodic(0))
 
 
 if __name__ == "__main__":
