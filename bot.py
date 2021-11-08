@@ -96,7 +96,7 @@ async def cmd_current(message: types.Message):
         today_schedule = schedule[get_weekday()]
     if curr_lesson_time < len(today_schedule):
         curr_lesson = today_schedule[curr_lesson_time]
-        answer = "Now running:\n"
+        answer = "Сейчас идёт:\n"
         lesson_start = get_readable_time(get_lesson_start(curr_lesson_time))
         lesson_end = get_readable_time(get_lesson_start(curr_lesson_time) + 45)
         answer += "{lesson} ({start_time} - {end_time})\n".format(lesson=curr_lesson, start_time=lesson_start,
@@ -114,11 +114,14 @@ async def cmd_next(message: types.Message):
         today_schedule = schedule[get_weekday()]
     if curr_next_lesson_time < len(today_schedule):
         curr_lesson = today_schedule[curr_next_lesson_time]
-        answer = "Next lesson:\n"
+        answer = "Следующий урок:\n"
         lesson_start = get_readable_time(get_lesson_start(curr_next_lesson_time))
         lesson_end = get_readable_time(get_lesson_start(curr_next_lesson_time) + 45)
         answer += "{lesson} ({start_time} - {end_time})\n".format(lesson=curr_lesson, start_time=lesson_start,
                                                                   end_time=lesson_end)
+        with open("data/lesson_specifiers.json") as json_specifiers:
+            specifiers = json.load(json_specifiers)
+            answer += specifiers[curr_lesson]
     else:
         answer = "There are no more lessons today\n"
     await message.answer(answer, parse_mode=types.ParseMode.HTML)
