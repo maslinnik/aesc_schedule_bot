@@ -1,5 +1,6 @@
 #!venv/bin/python
 import logging
+import asyncio
 from aiogram import Bot, Dispatcher, executor, types
 from os import getenv
 from sys import exit
@@ -150,7 +151,38 @@ async def cmd_next(message: types.Message):
         answer = "Сегодня больше нет уроков\n"
     await message.answer(answer, parse_mode=types.ParseMode.HTML)
 
+async def periodic(delta):  # delta in min
+     while True:
+         with open("data/lesson_time.json") as json_lesson_time:
+             lesson_time = json.load(json_lesson_time)
+             # print(lesson_time)
+         with open("data/schedule.json") as json_schedule:
+             schedule = json.load(json_schedule)
+             today_schedule = schedule[get_weekday()]
+         with open("data/lesson_specifiers.json") as json_specifiers:
+             specifiers = json.load(json_specifiers)
+         now = get_time()
+         # print(f"{now}")
+         for id in range(len(lesson_time["lessons"])):
+             if now + delta == int(lesson_time["lessons"][id]):
+                 lesson_start = get_readable_time(lesson_time["lessons"][id])
+                 lesson_end = get_readable_time(lesson_time["lessons"][id] + 45)
+                 answer = "Через {delta} минут начнётся\n" \
+                          "{lesson} ({start_time} - {end_time})\n".format(delta=delta,
+                                                                          lesson=today_schedule[id],
+                                                                          start_time=lesson_start,
+                                                                          end_time=lesson_end)
+                 curr_lesson = today_schedule[id]
+                 answer += specifiers[curr_lesson]
+                 await bot.send_message(-1001542214018, answer, disable_web_page_preview=False)
+         await asyncio.sleep(60)
 
+
+ async def on_startup(_):
+     asyncio.create_task(periodic(10))
+        
+    
 if __name__ == "__main__":
     # Запуск бота
-    executor.start_polling(dp, skip_updates=True)
+    executor.start_polling(dp, skip_updates=True, on_startup=on_startup)
+
