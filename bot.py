@@ -24,7 +24,10 @@ HELP_STRING: str = """
 bot_token: str | None = getenv("BOT_TOKEN")
 assert bot_token, "Token is not provided"
 
-bot = Bot(token=bot_token)
+bot = Bot(
+    token=bot_token,
+    parse_mode=ParseMode.MARKDOWN_V2
+)
 
 # Диспетчер для бота
 dp = Dispatcher(bot)
@@ -111,15 +114,14 @@ def get_lesson_representation(weekday: int, lesson_index: int) -> str:
 @dp.message_handler(commands="help")
 async def cmd_help(message: Message):
     "Handler for /help command"
-    await message.answer(HELP_STRING, parse_mode=ParseMode.HTML)
+    await message.answer(HELP_STRING)
 
 
 @dp.message_handler(commands="schedule")
 async def cmd_schedule(message: Message):
     "Handler for /schedule command"
     await message.answer(
-        get_schedule_representation(date.today()),
-        parse_mode=ParseMode.MARKDOWN
+        get_schedule_representation(date.today())
     )
 
 
@@ -127,8 +129,7 @@ async def cmd_schedule(message: Message):
 async def cmd_tomorrow(message: Message):
     "Handler for /tomorrow command"
     await message.answer(
-        get_schedule_representation(date.today() + timedelta(days=1)),
-        parse_mode=ParseMode.MARKDOWN
+        get_schedule_representation(date.today() + timedelta(days=1))
     )
 
 
@@ -142,9 +143,8 @@ async def cmd_now(message: Message):
         await cmd_next(message)
     else:
         await message.reply(
-            f'**Сейчас идёт:**\n\n' \
-                + get_lesson_representation(weekday, lesson),
-            parse_mode=ParseMode.MARKDOWN
+            f'**Сейчас идёт:**\n\n'
+                + get_lesson_representation(weekday, lesson)
         )
 
 
@@ -155,15 +155,11 @@ async def cmd_next(message: Message):
     lesson: Optional[int] = get_next_lesson()
 
     if lesson is None:
-        await message.reply(
-            "**Сегодня больше нет уроков**",
-            parse_mode=ParseMode.MARKDOWN
-        )
+        await message.reply("**Сегодня больше нет уроков**")
     else:
         await message.reply(
-            f'**Следующий урок:**\n\n' \
-                + get_lesson_representation(weekday, lesson),
-            parse_mode=ParseMode.MARKDOWN
+            f'**Следующий урок:**\n\n'
+                + get_lesson_representation(weekday, lesson)
         )
 
 
@@ -197,8 +193,7 @@ async def notify_lesson(deltas: list[int]):
     await bot.send_message(
         HOME_CHAT_ID,
         f'**{time_comment}:**\n\n' \
-            + get_lesson_representation(now.weekday(), next_lesson),
-        parse_mode=ParseMode.MARKDOWN
+            + get_lesson_representation(now.weekday(), next_lesson)
     )
 
 async def notify_lessons():
