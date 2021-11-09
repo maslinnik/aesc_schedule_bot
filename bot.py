@@ -77,7 +77,9 @@ def get_lesson_start(i):
 
 @dp.message_handler(commands="help")
 async def cmd_help(message: types.Message):
-    s = ""
+    s = "Привет! Я бот, который сообщает расписание 10В.\n"
+    s += "За 5 и за 1 минуту до урока я автоматически пришлю ссылку на него.\n"
+    s += "Также можно получить информацию командами:\n"
     s += "/schedule - расписание на сегодня\n"
     s += "/tomorrow - расписание на завтра\n"
     s += "/now - текущий урок\n"
@@ -94,9 +96,17 @@ async def cmd_schedule(message: types.Message):
         schedule = json.load(json_schedule)
         for i, subject in enumerate(schedule[get_weekday()]):
             if curr_lesson_time == i:
-                answer += "<b>{i}. {subject}</b>\n".format(i=i + 1, subject=subject)
+                lesson_start = get_readable_time(get_lesson_start(i))
+                lesson_end = get_readable_time(get_lesson_start(i) + 45)
+                answer += "<b>{i}. {lesson} ({start_time} - {end_time})</b>\n".format(i=i + 1, lesson=subject,
+                                                                               start_time=lesson_start,
+                                                                               end_time=lesson_end)
             else:
-                answer += "{i}. {subject}\n".format(i=i + 1, subject=subject)
+                lesson_start = get_readable_time(get_lesson_start(i))
+                lesson_end = get_readable_time(get_lesson_start(i) + 45)
+                answer += "{i}. {lesson} ({start_time} - {end_time})\n".format(i=i + 1, lesson=subject,
+                                                                                      start_time=lesson_start,
+                                                                                      end_time=lesson_end)
     await message.answer(answer, parse_mode=types.ParseMode.HTML)
 
 
@@ -106,7 +116,11 @@ async def cmd_tomorrow(message: types.Message):
     with open("data/schedule.json") as json_schedule:
         schedule = json.load(json_schedule)
         for i, subject in enumerate(schedule[get_weekday(1)]):
-            answer += "{i}. {subject}\n".format(i=i + 1, subject=subject)
+            lesson_start = get_readable_time(get_lesson_start(i))
+            lesson_end = get_readable_time(get_lesson_start(i) + 45)
+            answer += "{i}. {lesson} ({start_time} - {end_time})\n".format(i=i + 1, lesson=subject,
+                                                                           start_time=lesson_start,
+                                                                           end_time=lesson_end)
     await message.answer(answer, parse_mode=types.ParseMode.HTML)
 
 
@@ -128,7 +142,7 @@ async def cmd_now(message: types.Message):
             answer += specifiers[curr_lesson]
     else:
         answer = "Сейчас нет урока\n"
-    await message.answer(answer, parse_mode=types.ParseMode.HTML)
+    await message.answer(answer, parse_mode=types.ParseMode.HTML, disable_web_page_preview=True)
 
 
 @dp.message_handler(commands="next")
@@ -149,7 +163,7 @@ async def cmd_next(message: types.Message):
             answer += specifiers[curr_lesson]
     else:
         answer = "Сегодня больше нет уроков\n"
-    await message.answer(answer, parse_mode=types.ParseMode.HTML)
+    await message.answer(answer, parse_mode=types.ParseMode.HTML, disable_web_page_preview=True)
 
 
 @dp.message_handler(commands="lesson_test")
@@ -171,7 +185,7 @@ async def cmd_lesson_test(message: types.Message):
             answer += specifiers[curr_lesson]
     else:
         answer = "error"
-    await message.answer(answer, parse_mode=types.ParseMode.HTML)
+    await message.answer(answer, parse_mode=types.ParseMode.HTML, disable_web_page_preview=True)
 
 
 async def periodic(delta):  # delta in min
@@ -203,7 +217,7 @@ async def periodic(delta):  # delta in min
                                                                              end_time=lesson_end)
                 curr_lesson = today_schedule[id]
                 answer += specifiers[curr_lesson]
-                await bot.send_message(-1001542214018, answer, disable_web_page_preview=False)
+                await bot.send_message(-1001542214018, answer, disable_web_page_preview=True)
         await asyncio.sleep(60)
 
 
