@@ -3,7 +3,6 @@ import logging
 import asyncio
 from aiogram import Bot, Dispatcher, executor, types
 from os import getenv
-from sys import exit
 from datetime import datetime
 import json
 
