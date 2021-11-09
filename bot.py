@@ -76,12 +76,13 @@ def get_lesson_start(i):
 
 @dp.message_handler(commands="help")
 async def cmd_help(message: types.Message):
-    s = ""
-    s += "/schedule - расписание на сегодня\n"
-    s += "/tomorrow - расписание на завтра\n"
-    s += "/now - текущий урок\n"
-    s += "/next - следующий урок\n"
-    s += "/help - помощь\n"
+    s = """
+/schedule - расписание на сегодня
+/tomorrow - расписание на завтра
+/now - текущий урок
+/next - следующий урок
+/help - помощь
+"""
     await message.answer(s, parse_mode=types.ParseMode.HTML)
 
 
