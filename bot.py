@@ -65,7 +65,8 @@ def get_current_lesson() -> Optional[int]:
 def get_next_lesson() -> Optional[int]:
     "Get index of next lesson"
     now: time = datetime.now().time()
-    for i, (start, _) in reversed(list(enumerate(get_lessons_time()))):
+    today_schedule: list[str] = get_schedule()[date.today().weekday()]
+    for i, (start, _) in reversed(list(enumerate(get_lessons_time()[:len(today_schedule)]))):
         if now < start:
             return i
 
@@ -166,7 +167,7 @@ async def cmd_next(message: Message):
         )
 
 
-async def notify_lesson(deltas: list[timedelta]):
+async def notify_lesson(deltas: list[int]):
     lessons_time: list[tuple[time, time]] = get_lessons_time()
 
     now: datetime = datetime.now()
@@ -184,13 +185,12 @@ async def notify_lesson(deltas: list[timedelta]):
     time_comment: str
 
     for delta in deltas:
-        if (now + delta).time() >= lessons_time[next_lesson][0]:
-            minutes_left: int = (lesson_start - now).seconds // 60
-            if (minutes_left > 0):
-                time_comment = f'Через {(lesson_start - now).seconds // 60} начнётся'
-            else:
-                time_comment = 'Сейчас начнётся'
-            break
+        minutes_left: int = (lesson_start - now).seconds // 60
+        if (minutes_left == delta):
+            time_comment = f'Через {(lesson_start - now).seconds // 60} минуты начнётся'
+        else:
+            time_comment = 'Сейчас начнётся'
+        break
     else:
         return
 
@@ -201,17 +201,18 @@ async def notify_lesson(deltas: list[timedelta]):
         parse_mode=ParseMode.MARKDOWN
     )
 
-async def notify_lessons(_):
+async def notify_lessons():
     while True:
-        asyncio.create_task(notify_lesson([
-            timedelta(minutes=5)
-        ]))
+        await notify_lesson([5, 0])
         await asyncio.sleep(60)
+
+async def run_notifier(_):
+    asyncio.create_task(notify_lessons())
 
 
 if __name__ == "__main__":
     executor.start_polling(
         dp,
         skip_updates=True,
-        # on_startup=notify_lessons
+        on_startup=run_notifier
     )
