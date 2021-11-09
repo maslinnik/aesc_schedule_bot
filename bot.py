@@ -1,4 +1,4 @@
-#!venv/bin/python
+#-*- coding: utf-8 -*-
 
 from aiogram import Bot, Dispatcher, executor
 from aiogram.types import ParseMode, Message
