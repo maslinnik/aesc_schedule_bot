@@ -7,16 +7,16 @@ from sys import exit
 import datetime
 import json
 
-# bot_token = getenv("BOT_TOKEN")
-# if not bot_token:
-#     exit("Error: no token provided")
+bot_token = getenv("BOT_TOKEN")
+if not bot_token:
+    exit("Error: no token provided")
 
-# bot = Bot(token=bot_token)
+bot = Bot(token=bot_token)
 
-# # Диспетчер для бота
-# dp = Dispatcher(bot)
-# # Включаем логирование, чтобы не пропустить важные сообщения
-# logging.basicConfig(level=logging.INFO)
+# Диспетчер для бота
+dp = Dispatcher(bot)
+# Включаем логирование, чтобы не пропустить важные сообщения
+logging.basicConfig(level=logging.INFO)
 
 
 weekdays = ["Monday",

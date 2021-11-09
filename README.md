@@ -15,6 +15,7 @@ AESC Schedule Bot
 
 ```bash
 git clone https://github.com/maslinnik/aesc_schedule_bot
+pip install aiogram
 cd aesc_schedule_bot
 python bot.py
 ```
