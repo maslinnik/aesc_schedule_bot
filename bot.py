@@ -83,18 +83,19 @@ def get_next_lesson() -> Optional[int]:
 def get_schedule_representation(day: date) -> str:
     "Get human-readable schedule representation for specified day"
     current_lesson: Optional[int] = (
-        get_current_lesson() if date.today() == date
+        get_current_lesson() if date.today() == day
         else None
     )
     lesson_times: list[tuple[time, time]] = get_lessons_time()
 
     return '\n'.join([
         (
-            '<b>{}</b>' if i == current_lesson
+            '<b>{} — сейчас</b>' if i == current_lesson
             else '{}'
         ).format(
             (
-                "{}. {} ({} - {})"
+                "{}. {} ({} - {})" if lesson
+                else '{}.'
             ).format(
                 i + 1,
                 lesson,
