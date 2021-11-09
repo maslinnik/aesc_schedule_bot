@@ -90,7 +90,7 @@ async def cmd_schedule(message: types.Message):
         schedule = json.load(json_schedule)
     if len(schedule[str(get_weekday())]) != 0:
         for i, subject in schedule[str(get_weekday())].items():
-            if curr_lesson_number == i:
+            if str(curr_lesson_number) == i:
                 start, end = get_lesson_time(i)
                 ans += "<b>{i}. {subject} ({start_time} - {end_time})</b>\n".format(i=i, subject=subject,
                                                                                     start_time=get_readable_time(start),
@@ -98,8 +98,8 @@ async def cmd_schedule(message: types.Message):
             else:
                 start, end = get_lesson_time(i)
                 ans += "{i}. {subject} ({start_time} - {end_time})\n".format(i=i, subject=subject,
-                                                                                    start_time=get_readable_time(start),
-                                                                                    end_time=get_readable_time(end))
+                                                                             start_time=get_readable_time(start),
+                                                                             end_time=get_readable_time(end))
     else:
         ans += "Сегодня нет уроков\n"
     await message.answer(ans, parse_mode=types.ParseMode.HTML)
