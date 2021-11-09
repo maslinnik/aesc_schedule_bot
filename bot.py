@@ -7,30 +7,29 @@ from sys import exit
 import datetime
 import json
 
-bot_token = getenv("BOT_TOKEN")
-if not bot_token:
-    exit("Error: no token provided")
+# bot_token = getenv("BOT_TOKEN")
+# if not bot_token:
+#     exit("Error: no token provided")
 
-bot = Bot(token=bot_token)
+# bot = Bot(token=bot_token)
+
+# # Диспетчер для бота
+# dp = Dispatcher(bot)
+# # Включаем логирование, чтобы не пропустить важные сообщения
+# logging.basicConfig(level=logging.INFO)
 
 
-# Диспетчер для бота
-dp = Dispatcher(bot)
-# Включаем логирование, чтобы не пропустить важные сообщения
-logging.basicConfig(level=logging.INFO)
-
-
-weekdays = {0: "Monday",
-            1: "Tuesday",
-            2: "Wednesday",
-            3: "Thursday",
-            4: "Friday",
-            5: "Saturday",
-            6: "Sunday"}
+weekdays = ["Monday",
+            "Tuesday",
+            "Wednesday",
+            "Thursday",
+            "Friday",
+            "Saturday",
+            "Sunday"]
 
 
 def get_weekday(shift=0):
-    return weekdays[(datetime.datetime.today().weekday()+shift) % 7]
+    return weekdays[(datetime.datetime.today().weekday() + shift) % 7]
 
 
 def get_time():
@@ -44,11 +43,11 @@ def get_readable_time(time):
 def get_lesson_time():
     curr_time = get_time()
     with open("data/lesson_time.json") as json_lesson_time:
-        lesson_time = json.load(json_lesson_time)
-        for i, start in enumerate(lesson_time["lessons"]):
-            if int(start) <= curr_time <= int(start) + 45:
-                return i
-        return len(lesson_time["lessons"])
+        lesson_time = list(map(int, json.load(json_lesson_time)["lessons"]))
+        return next(
+            filter(lambda x: x[1] <= curr_time <= x[1] + 45,
+                   enumerate(lesson_time + [curr_time]))
+        )[0]
 
 
 def get_last_lesson_time():
@@ -92,11 +91,9 @@ async def cmd_schedule(message: types.Message):
     curr_lesson_time = get_lesson_time()
     with open("data/schedule.json") as json_schedule:
         schedule = json.load(json_schedule)
-        for i, subject in enumerate(schedule[get_weekday()]):
-            if curr_lesson_time == i:
-                answer += "<b>{i}. {subject}</b>\n".format(i=i + 1, subject=subject)
-            else:
-                answer += "{i}. {subject}\n".format(i=i + 1, subject=subject)
+
+        parse = lambda i, subject: f"{i}. {subject}\n" if curr_lesson_time != i else f"<b>{i}. {subject}</b>\n"
+        answer = "".join([parse(i, answer) for i, answer in enumerate(schedule[get_weekday()])])
     await message.answer(answer, parse_mode=types.ParseMode.HTML)
 
 
@@ -105,8 +102,8 @@ async def cmd_tomorrow(message: types.Message):
     answer = ""
     with open("data/schedule.json") as json_schedule:
         schedule = json.load(json_schedule)
-        for i, subject in enumerate(schedule[get_weekday(1)]):
-            answer += "{i}. {subject}\n".format(i=i + 1, subject=subject)
+        parse = lambda i, subject: f"{i}. {subject}\n"
+        answer = [parse(i, subject) for i, subject in enumerate(schedule[get_weekday(1)])]
     await message.answer(answer, parse_mode=types.ParseMode.HTML)
 
 
@@ -140,8 +137,10 @@ async def cmd_next(message: types.Message):
     if curr_next_lesson_time < len(today_schedule):
         curr_lesson = today_schedule[curr_next_lesson_time]
         answer = "Следующий урок:\n"
-        lesson_start = get_readable_time(get_lesson_start(curr_next_lesson_time))
-        lesson_end = get_readable_time(get_lesson_start(curr_next_lesson_time) + 45)
+        lesson_start = get_readable_time(
+            get_lesson_start(curr_next_lesson_time))
+        lesson_end = get_readable_time(
+            get_lesson_start(curr_next_lesson_time) + 45)
         answer += "{lesson} ({start_time} - {end_time})\n".format(lesson=curr_lesson, start_time=lesson_start,
                                                                   end_time=lesson_end)
         with open("data/lesson_specifiers.json") as json_specifiers:
