@@ -103,7 +103,7 @@ async def cmd_tomorrow(message: types.Message):
     with open("data/schedule.json") as json_schedule:
         schedule = json.load(json_schedule)
         parse = lambda i, subject: f"{i}. {subject}\n"
-        answer = [parse(i, subject) for i, subject in enumerate(schedule[get_weekday(1)])]
+        answer = "".join([parse(i, subject) for i, subject in enumerate(schedule[get_weekday(1)])])
     await message.answer(answer, parse_mode=types.ParseMode.HTML)
 
 
