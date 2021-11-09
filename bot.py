@@ -80,7 +80,7 @@ def get_schedule_representation(day: date) -> str:
     )
     lesson_times: list[tuple[time, time]] = get_lessons_time()
 
-    return '/n'.join([
+    return '\n'.join([
         (
             '**{}**' if i == current_lesson
             else '{}'
@@ -97,12 +97,13 @@ def get_schedule_representation(day: date) -> str:
     ])
 
 
-def get_lesson_representation(weekday: int, lesson: int) -> str:
+def get_lesson_representation(weekday: int, lesson_index: int) -> str:
     "Get human-readable lesson representation"
+    lesson: str = get_schedule()[weekday][lesson_index]
     return "{} ({} - {})\n\n{}".format(
         lesson,
-        *map(lambda t: t.isoformat('minutes'), get_lessons_time()[lesson]),
-        get_lessons_info()[get_schedule()[weekday][lesson]]
+        *map(lambda t: t.isoformat('minutes'), get_lessons_time()[lesson_index]),
+        get_lessons_info()[lesson]
     )
 
 
@@ -209,9 +210,8 @@ async def notify_lessons(_):
 
 
 if __name__ == "__main__":
-    # Запуск бота
     executor.start_polling(
         dp,
         skip_updates=True,
-        on_startup=notify_lessons
+        # on_startup=notify_lessons
     )
