@@ -20,13 +20,13 @@ dp = Dispatcher(bot)
 logging.basicConfig(level=logging.INFO)
 
 
-weekdays = {0: "Monday",
-            1: "Tuesday",
-            2: "Wednesday",
-            3: "Thursday",
-            4: "Friday",
-            5: "Saturday",
-            6: "Sunday"}
+weekdays = ["Monday",
+            "Tuesday",
+            "Wednesday",
+            "Thursday",
+            "Friday",
+            "Saturday",
+            "Sunday"]
 
 
 def get_weekday(shift=0):
