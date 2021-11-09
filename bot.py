@@ -166,41 +166,39 @@ async def cmd_next(message: Message):
 
 
 async def notify_lesson(deltas: list[timedelta]):
-    while True:
-        lessons_time: list[tuple[time, time]] = get_lessons_time()
-        today_schedule: list[str] = get_schedule()[date.today().weekday()]
+    lessons_time: list[tuple[time, time]] = get_lessons_time()
 
-        now: datetime = datetime.now()
+    now: datetime = datetime.now()
 
-        next_lesson: Optional[int] = get_next_lesson()
+    next_lesson: Optional[int] = get_next_lesson()
 
-        if next_lesson is None:
-            return
+    if next_lesson is None:
+        return
 
-        lesson_start: datetime = datetime.combine(
-            date=now.date(),
-            time=lessons_time[next_lesson][0]
-        )
+    lesson_start: datetime = datetime.combine(
+        date=now.date(),
+        time=lessons_time[next_lesson][0]
+    )
 
-        time_comment: str
+    time_comment: str
 
-        for delta in deltas:
-            if (now + delta).time() >= lessons_time[next_lesson][0]:
-                minutes_left: int = (lesson_start - now).seconds // 60
-                if (minutes_left > 0):
-                    time_comment = f'Через {(lesson_start - now).seconds // 60} начнётся'
-                else:
-                    time_comment = 'Сейчас начнётся'
-                break
-        else:
-            return
+    for delta in deltas:
+        if (now + delta).time() >= lessons_time[next_lesson][0]:
+            minutes_left: int = (lesson_start - now).seconds // 60
+            if (minutes_left > 0):
+                time_comment = f'Через {(lesson_start - now).seconds // 60} начнётся'
+            else:
+                time_comment = 'Сейчас начнётся'
+            break
+    else:
+        return
 
-        await bot.send_message(
-            HOME_CHAT_ID,
-            f'**{time_comment}:**\n\n' \
-                + get_lesson_representation(now.weekday(), next_lesson),
-            parse_mode=ParseMode.MARKDOWN
-        )
+    await bot.send_message(
+        HOME_CHAT_ID,
+        f'**{time_comment}:**\n\n' \
+            + get_lesson_representation(now.weekday(), next_lesson),
+        parse_mode=ParseMode.MARKDOWN
+    )
 
 async def notify_lessons(_):
     while True:
