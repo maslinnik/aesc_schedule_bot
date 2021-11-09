@@ -5,7 +5,7 @@ from aiogram.types import ParseMode, Message
 
 from os import getenv
 from datetime import date, time, datetime, timedelta
-from typing import Optional
+from typing import Optional, Any
 
 import logging
 import asyncio
@@ -21,12 +21,16 @@ HELP_STRING: str = """
 /help - помощь
 """
 
+DEFAULT_MESSAGE_PARAMS: dict[str, Any] = {
+    "disable_web_page_preview": True
+}
+
 bot_token: str | None = getenv("BOT_TOKEN")
 assert bot_token, "Token is not provided"
 
 bot = Bot(
     token=bot_token,
-    parse_mode=ParseMode.MARKDOWN_V2
+    parse_mode=ParseMode.HTML
 )
 
 # Диспетчер для бота
@@ -86,7 +90,7 @@ def get_schedule_representation(day: date) -> str:
 
     return '\n'.join([
         (
-            '**{}**' if i == current_lesson
+            '<b>{}</b>' if i == current_lesson
             else '{}'
         ).format(
             (
@@ -114,14 +118,15 @@ def get_lesson_representation(weekday: int, lesson_index: int) -> str:
 @dp.message_handler(commands="help")
 async def cmd_help(message: Message):
     "Handler for /help command"
-    await message.answer(HELP_STRING)
+    await message.answer(HELP_STRING, **DEFAULT_MESSAGE_PARAMS)
 
 
 @dp.message_handler(commands="schedule")
 async def cmd_schedule(message: Message):
     "Handler for /schedule command"
     await message.answer(
-        get_schedule_representation(date.today())
+        get_schedule_representation(date.today()),
+        **DEFAULT_MESSAGE_PARAMS
     )
 
 
@@ -129,7 +134,8 @@ async def cmd_schedule(message: Message):
 async def cmd_tomorrow(message: Message):
     "Handler for /tomorrow command"
     await message.answer(
-        get_schedule_representation(date.today() + timedelta(days=1))
+        get_schedule_representation(date.today() + timedelta(days=1)),
+        **DEFAULT_MESSAGE_PARAMS
     )
 
 
@@ -143,8 +149,9 @@ async def cmd_now(message: Message):
         await cmd_next(message)
     else:
         await message.reply(
-            f'**Сейчас идёт:**\n\n'
-                + get_lesson_representation(weekday, lesson)
+            f'<b>Сейчас идёт:</b>\n\n'
+                + get_lesson_representation(weekday, lesson),
+            **DEFAULT_MESSAGE_PARAMS
         )
 
 
@@ -155,11 +162,12 @@ async def cmd_next(message: Message):
     lesson: Optional[int] = get_next_lesson()
 
     if lesson is None:
-        await message.reply("**Сегодня больше нет уроков**")
+        await message.reply("<b>Сегодня больше нет уроков</b>", **DEFAULT_MESSAGE_PARAMS)
     else:
         await message.reply(
-            f'**Следующий урок:**\n\n'
-                + get_lesson_representation(weekday, lesson)
+            f'<b>Следующий урок:</b>\n\n'
+                + get_lesson_representation(weekday, lesson),
+            **DEFAULT_MESSAGE_PARAMS
         )
 
 
@@ -192,8 +200,9 @@ async def notify_lesson(deltas: list[int]):
 
     await bot.send_message(
         HOME_CHAT_ID,
-        f'**{time_comment}:**\n\n' \
-            + get_lesson_representation(now.weekday(), next_lesson)
+        f'<b>{time_comment}:</b>\n\n' \
+            + get_lesson_representation(now.weekday(), next_lesson),
+        **DEFAULT_MESSAGE_PARAMS
     )
 
 async def notify_lessons():
