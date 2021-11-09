@@ -73,7 +73,7 @@ def get_next_lesson() -> Optional[int]:
     "Get index of next lesson"
     now: time = datetime.now().time()
     today_schedule: list[str] = get_schedule()[date.today().weekday()]
-    for i, (start, _) in reversed(list(enumerate(get_lessons_time()[:len(today_schedule)]))):
+    for i, (start, _) in enumerate(get_lessons_time()[:len(today_schedule)]):
         if now < start:
             return i
 
@@ -193,8 +193,10 @@ async def notify_lesson(deltas: list[int]):
         minutes_left: int = (lesson_start - now).seconds // 60
         if (minutes_left == delta):
             time_comment = f'Через {(lesson_start - now).seconds // 60} минуты начнётся'
-        else:
+        elif minutes_left < delta:
             time_comment = 'Сейчас начнётся'
+        else:
+            continue
         break
     else:
         return
