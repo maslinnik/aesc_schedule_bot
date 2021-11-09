@@ -4,7 +4,7 @@ import asyncio
 from aiogram import Bot, Dispatcher, executor, types
 from os import getenv
 from sys import exit
-import datetime
+from datetime import datetime
 import json
 
 bot_token = getenv("BOT_TOKEN")
@@ -30,11 +30,11 @@ weekdays = ["Monday",
 
 
 def get_weekday(shift=0):
-    return weekdays[(datetime.datetime.today().weekday()+shift) % 7]
+    return weekdays[(datetime.today().weekday()+shift) % 7]
 
 
 def get_time():
-    return datetime.datetime.now().hour * 60 + datetime.datetime.now().minute
+    return datetime.now().hour * 60 + datetime.now().minute
 
 
 def get_readable_time(time):
