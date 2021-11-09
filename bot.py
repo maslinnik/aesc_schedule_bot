@@ -39,7 +39,7 @@ def get_lessons_time() -> list[tuple[time, time]]:
             time.fromisoformat(start),
             time.fromisoformat(end)
         )
-        for start, end in json.load(open('data/lesson_time.json'))['time']
+        for start, end in json.load(open('data/lessons.json'))['time']
     ]
 
 
@@ -50,7 +50,7 @@ def get_lessons_info() -> dict[str, str]:
 
 def get_schedule() -> list[list[str]]:
     "Get list of lessons on weekdays"
-    return json.load(open('data/schedule.json'))['schedule']
+    return json.load(open('data/lessons.json'))['schedule']
 
 
 def get_current_lesson() -> Optional[int]:
